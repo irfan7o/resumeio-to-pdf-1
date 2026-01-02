@@ -1,71 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>Resume.io to PDF</title>
 
     <style>
+        :root[data-theme="light"] {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.5);
+            --input-border: rgba(0, 0, 0, 0.1);
+            --btn-bg: rgba(0, 0, 0, 0.85);
+            --btn-text: #ffffff;
+            --error-color: #ff3b30;
+            --gradient-1: #00d4ff;
+            --gradient-2: #00f5a0;
+            --modal-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --btn-bg: rgba(255, 255, 255, 0.95);
+            --btn-text: #0a0e27;
+            --error-color: #ff453a;
+            --gradient-1: #00d4ff;
+            --gradient-2: #00f5a0;
+            --modal-bg: rgba(26, 31, 58, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: "Inter", sans-serif;
+            font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* Animated Grid Background */
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .grid-pattern {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(var(--input-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--input-border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Gradient Orbs */
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--gradient-1), transparent);
+            top: 50%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, var(--gradient-2), transparent);
+            top: 50%;
+            right: 20%;
+            transform: translate(50%, -50%);
+            animation-delay: 7s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(30px, 50px) scale(1.05); }
         }
 
         .container {
             position: relative;
+            z-index: 1;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 3rem;
+            padding: 2rem;
         }
 
-        .links {
+        /* Theme Toggle */
+        .theme-toggle {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: 2rem;
+            left: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--input-bg);
+        }
+
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-primary);
+        }
+
+        .info-toggle {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-toggle:hover {
+            transform: scale(1.1);
+            background: var(--input-bg);
+        }
+
+        .info-toggle svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--input-bg);
+        }
+
+        .close-btn svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-primary);
+        }
+
+        .modal-content h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-content p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .modal-content a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+            font-weight: 500;
+        }
+
+        .modal-content a:hover {
+            opacity: 0.7;
+        }
+
+        .modal-content code {
+            background: var(--input-bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .social-links {
+            display: flex;
             gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-3px);
+            background: var(--input-border);
+            opacity: 1;
+        }
+
+        .social-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Main Card with Glassmorphism */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
         }
 
         .title {
-            font-size: 3rem;
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
         }
 
         .resume_form {
             display: flex;
             align-items: center;
             flex-direction: column;
-            min-width: 30rem;
-            gap: 2rem;
+            width: 100%;
+            gap: 1.5rem;
+        }
+
+        .input-wrapper {
+            width: 100%;
+            position: relative;
         }
 
         .resume {
             width: 100%;
-            padding: 1rem;
-            border-radius: 4px;
-            border: 1px solid #666666;
-            font-family: "Inter", sans-serif;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-family: "Geist", sans-serif;
             font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .resume::placeholder {
+            color: #9ca3af;
+        }
+
+        .resume:focus {
+            border-color: var(--input-border);
+            background: var(--input-bg);
+            box-shadow: none;
+            outline: none;
         }
 
         .btn {
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 4px;
+            gap: 0.5rem;
+            border-radius: 16px;
             border: none;
-            font-size: 1rem;
-            font-family: "Inter", sans-serif;
-            background-color: #1c1c1c;
-            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: "Geist", sans-serif;
+            background: var(--btn-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--btn-text);
             cursor: pointer;
-            width: 12rem;
+            width: 100%;
             height: 3.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         #loader {
@@ -73,14 +450,16 @@
         }
 
         .error {
-            margin-right: auto;
             display: none;
-            color: red;
-            font-size: 0.8rem;
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding-left: 0.5rem;
         }
 
         .error-border {
-            border: 1px solid red;
+            border-color: var(--error-color) !important;
+            animation: shake 0.3s;
         }
 
         .spinner_V8m1 {
@@ -115,48 +494,189 @@
         }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
-        .shake {
-            animation: shake 0.1s;
-            animation-iteration-count: 1;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .glass-card {
+                padding: 2rem;
+            }
+
+            .theme-toggle {
+                top: 1rem;
+                left: 1rem;
+            }
+
+            .info-toggle {
+                top: 1rem;
+                right: 1rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+
+            .modal-header h2 {
+                font-size: 1.5rem;
+            }
         }
 
     </style>
 </head>
 <body>
+<div class="grid-background">
+    <div class="grid-pattern"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+</div>
+
 <div class="container">
-    <div class="links">
-        <iframe  src="https://ghbtns.com/github-btn.html?user=felipeall&repo=resumeio-to-pdf&type=star&count=true&size=large" frameborder="0" scrolling="0" width="130" height="30" title="GitHub"></iframe>
-        <a href="https://www.buymeacoffee.com/felipeall" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 160px !important;" ></a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg id="theme-icon-light" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <button class="info-toggle" onclick="toggleModal()" aria-label="Information">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    </button>
+
+    <div class="glass-card">
+        <h1 class="title">Resume.io</h1>
+        <p class="subtitle">Download your resume quickly and easily to pdf</p>
+        
+        <form method="post" class="resume_form" id="downloadForm">
+            <div class="input-wrapper">
+                <input type="text" class="resume" name="rendering_token" placeholder="Enter your resume renderingToken" aria-label="Id" maxlength="24">
+                <span class="error">Your resume renderingToken must be a 24-character alphanumeric string</span>
+            </div>
+            <button id="submit-btn" class="btn" type="submit">
+                <span id="submit-text">Download PDF</span>
+                <svg id="loader" width="23" height="23" stroke="#fff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <g class="spinner_V8m1">
+                        <circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle>
+                    </g>
+                </svg>
+            </button>
+        </form>
     </div>
-    <h1 class="title">Resume.io to PDF</h1>
-    <form method="post" class="resume_form" id="downloadForm">
-        <input type="text" class="resume" name="rendering_token" placeholder="Enter your resume `renderingToken`" aria-label="Id" maxlength="24">
-        <span class="error">Your resume `renderingToken` must be a 24-character alphanumeric string</span>
-        <button id="submit-btn" class="btn" type="submit"><span id="submit-text">Download</span>
-            <svg id="loader" width="23" height="23" stroke="#fff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <g class="spinner_V8m1">
-                    <circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle>
-                </g>
-            </svg>
-        </button>
-    </form>
+</div>
+
+<!-- Info Modal -->
+<div id="infoModal" class="modal" onclick="closeModalOnOutsideClick(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>How to Use</h2>
+            <button class="close-btn" onclick="toggleModal()" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <p>Download your resume from <a href="https://resume.io" target="_blank">resume.io</a> as a PDF file.</p>
+        
+        <p>Open the application, enter your resume <code>renderingToken</code> and click the download button. It will automatically download your resume as a PDF.</p>
+        
+        <h3>How to find your renderingToken</h3>
+        
+        <p><strong>Resumes:</strong> <a href="https://resume.io/api/app/resumes" target="_blank">https://resume.io/api/app/resumes</a></p>
+        
+        <p><strong>Cover Letters:</strong> <a href="https://resume.io/api/app/cover-letters/" target="_blank">https://resume.io/api/app/cover-letters/</a></p>
+        
+        <p>You will see a list of your resumes. Find the resume you want to download and get the renderingToken.</p>
+        
+        <div class="social-links">
+            <a href="http://github.com/irfan7o/" target="_blank" class="social-icon" aria-label="GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </a>
+            <a href="https://www.instagram.com/irfan.0z/" target="_blank" class="social-icon" aria-label="Instagram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
 </div>
 
 
 <script>
+    // Theme Toggle Function
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        // Toggle icons
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        
+        if (newTheme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+    }
+
+    // Modal Toggle Function
+    function toggleModal() {
+        const modal = document.getElementById('infoModal');
+        modal.classList.toggle('show');
+    }
+
+    // Close modal when clicking outside
+    function closeModalOnOutsideClick(event) {
+        const modal = document.getElementById('infoModal');
+        if (event.target === modal) {
+            modal.classList.remove('show');
+        }
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('infoModal');
+            modal.classList.remove('show');
+        }
+    });
+
+    // Load saved theme
+    window.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        
+        if (savedTheme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+    });
+
     window.addEventListener('pageshow', function() {
         document.getElementById('loader').style.display = 'none';
         document.getElementById('submit-text').style.display = 'block';
@@ -174,16 +694,11 @@
         if (!regex.test(rendering_token)) {
             errorMessage.style.display = 'block';
             inputField.classList.add('error-border');
-            inputField.classList.remove('shake');
-
-            setTimeout(function() {
-                inputField.classList.add('shake');
-            }, 100);
 
             return;
         } else {
             errorMessage.style.display = 'none';
-            inputField.classList.remove('error-border', 'shake');
+            inputField.classList.remove('error-border');
         }
 
         downloadForm.action = '/download/' + rendering_token;
