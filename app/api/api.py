@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
 from app.schemas.resumeio import Extension
@@ -57,3 +57,29 @@ def index(request: Request):
         Rendered template of the main index page.
     """
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """
+    Serve the favicon.
+
+    Returns
+    -------
+    fastapi.responses.FileResponse
+        The favicon file.
+    """
+    return FileResponse("templates/favicon.ico")
+
+
+@router.get("/favicon.png", include_in_schema=False)
+def favicon_png():
+    """
+    Serve the favicon PNG.
+
+    Returns
+    -------
+    fastapi.responses.FileResponse
+        The favicon PNG file.
+    """
+    return FileResponse("templates/logo.png", media_type="image/png")
