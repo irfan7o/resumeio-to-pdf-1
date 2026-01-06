@@ -490,9 +490,20 @@
         margin-top: 1.5rem;
       }
 
+      :root[data-theme="light"] .btn-secondary {
+        background: #ffffff;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
       .btn-secondary:hover {
         background: var(--glass-bg);
         transform: translateY(-2px);
+      }
+
+      :root[data-theme="light"] .btn-secondary:hover {
+        background: #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       }
 
       .btn-secondary svg {
