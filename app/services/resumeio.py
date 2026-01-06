@@ -1,9 +1,10 @@
 import io
 import json
+import os
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-import pytesseract
 import requests
 from fastapi import HTTPException
 from PIL import Image
@@ -11,6 +12,15 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.annotations import Link
 
 from app.schemas.resumeio import Extension
+
+# Check if tesseract is available
+TESSERACT_AVAILABLE = False
+try:
+    import pytesseract
+    pytesseract.get_tesseract_version()
+    TESSERACT_AVAILABLE = True
+except Exception:
+    pass
 
 
 @dataclass
@@ -55,9 +65,10 @@ class ResumeioDownloader:
         metadata_w, metadata_h = self.metadata[0].get("viewport").values()
 
         for i, image in enumerate(images):
-            page_pdf = pytesseract.image_to_pdf_or_hocr(Image.open(image), extension="pdf", config="--dpi 300")
+            page_pdf = self._image_to_pdf(image)
             page = PdfReader(io.BytesIO(page_pdf)).pages[0]
             page_scale = max(page.mediabox.height / metadata_h, page.mediabox.width / metadata_w)
+            
             pdf.add_page(page)
 
             for link in self.metadata[i].get("links"):
@@ -71,6 +82,38 @@ class ResumeioDownloader:
         with io.BytesIO() as file:
             pdf.write(file)
             return file.getvalue()
+
+    def _image_to_pdf(self, image: io.BytesIO) -> bytes:
+        """
+        Convert an image to PDF bytes.
+        
+        Uses Tesseract OCR if available, otherwise falls back to PIL.
+
+        Parameters
+        ----------
+        image : io.BytesIO
+            Image file as BytesIO object.
+
+        Returns
+        -------
+        bytes
+            PDF representation of the image.
+        """
+        img = Image.open(image)
+        
+        if TESSERACT_AVAILABLE:
+            # Use Tesseract OCR for text extraction
+            return pytesseract.image_to_pdf_or_hocr(img, extension="pdf", config="--dpi 300")
+        
+        # Fallback: Convert image to PDF using PIL
+        # Convert RGBA to RGB if necessary
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+        
+        # Save image as PDF using PIL
+        pdf_buffer = io.BytesIO()
+        img.save(pdf_buffer, format='PDF', resolution=300.0)
+        return pdf_buffer.getvalue()
 
     def __get_resume_metadata(self) -> None:
         """Download the metadata for the resume."""

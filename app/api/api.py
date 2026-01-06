@@ -1,4 +1,5 @@
 from typing import Annotated
+from pathlib import Path as FilePath
 
 from fastapi import APIRouter, Path, Query, Request, Response
 from fastapi.responses import HTMLResponse, FileResponse
@@ -8,7 +9,12 @@ from app.schemas.resumeio import Extension
 from app.services.resumeio import ResumeioDownloader
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+
+# Get the base directory (project root)
+BASE_DIR = FilePath(__file__).resolve().parent.parent.parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 @router.post("/download/{rendering_token}")
@@ -69,7 +75,7 @@ def favicon():
     fastapi.responses.FileResponse
         The favicon file.
     """
-    return FileResponse("templates/favicon.ico")
+    return FileResponse(str(TEMPLATES_DIR / "logo.png"), media_type="image/png")
 
 
 @router.get("/favicon.png", include_in_schema=False)
@@ -82,4 +88,4 @@ def favicon_png():
     fastapi.responses.FileResponse
         The favicon PNG file.
     """
-    return FileResponse("templates/logo.png", media_type="image/png")
+    return FileResponse(str(TEMPLATES_DIR / "logo.png"), media_type="image/png")
